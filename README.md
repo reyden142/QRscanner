@@ -46,3 +46,14 @@ server {
 nginx -s reload
 ```
 
+# Connecting React environment to Nginx
+
+## Step 1: Build the React App
+```bash
+npm run build
+```
+## Step 2: Copy the Build Files to Nginx's Web Root
+Move your React app's build folder to the Nginx web root directory. Open Command Prompt as Administrator:
+```bash
+xcopy /E /I /Y build\* C:\nginx\html\
+```
