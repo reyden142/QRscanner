@@ -21,7 +21,7 @@ To serve your website securely with HTTPS, you'll need to set up a web server li
 cd C:\nginx
 ```
 6. Start Nginx by running:
-```bash
+```nginx
 start nginx
 ```
 7. Open your browser and visit `http://localhost`. You should see the Nginx welcome page, indicating the server is running.
@@ -30,7 +30,7 @@ start nginx
 1. Create an ssl folder (`C:\nginx\ssl`)
 2. Place your certificate (`cert.pem`) and private key (`key.pem`) files in a folder (e.g., `C:\nginx\ssl`).
 3. Edit the `nginx.conf` file in `C:\nginx\conf` and update the server block to include the following:
-```bash
+```nginx
 server {
     listen 443 ssl;
     server_name yourdomain.com;  # Your domain
@@ -42,7 +42,7 @@ server {
 }
 ```
 4. Restart Nginx to apply the changes:
-```bash
+```nginx
 nginx -s reload
 ```
 
