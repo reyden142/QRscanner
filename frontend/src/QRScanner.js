@@ -15,7 +15,7 @@ const QRScanner = () => {
 
     const interval = setInterval(scanQRCode, 500);
     return () => clearInterval(interval);
-  }, [isScanning]);
+  }, [isScanning, scanQRCode]);
 
   const scanQRCode = useCallback(() => {
     if (!webcamRef.current) return;

@@ -7,9 +7,6 @@ import feastYouthLogo from "./images/FYlogo.png"; // Import logo
 function App() {
   return (
     <div className="app-container">
-      <header className="header-container">
-        <h1></h1> {/* You can add a title here */}
-      </header>
       <main className="main-content">
         <QRScanner />
       </main>
