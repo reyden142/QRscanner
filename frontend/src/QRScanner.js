@@ -10,13 +10,6 @@ const QRScanner = () => {
   const [imageLoading, setImageLoading] = useState(true);
   const webcamRef = useRef(null);
 
-  useEffect(() => {
-    if (!isScanning) return;
-
-    const interval = setInterval(scanQRCode, 500);
-    return () => clearInterval(interval);
-  }, [isScanning, scanQRCode]);
-
   const scanQRCode = useCallback(() => {
     if (!webcamRef.current) return;
     const imageSrc = webcamRef.current.getScreenshot();
@@ -57,6 +50,13 @@ const QRScanner = () => {
     };
     img.onerror = () => console.error("Failed to load image for QR scanning");
   }, []);
+
+  useEffect(() => {
+    if (!isScanning) return;
+
+    const interval = setInterval(scanQRCode, 500);
+    return () => clearInterval(interval);
+  }, [isScanning, scanQRCode]);
 
   const closeModal = () => {
     setShowModal(false);
