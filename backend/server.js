@@ -1,66 +1,81 @@
 const express = require("express");
-const https = require("https");
 const fs = require("fs");
 const path = require("path");
-const sharp = require("sharp");
-const { read } = require("qrcode-reader");
 const cors = require("cors");
-
-// Only load .env file if it exists (for local development)
-// In production, use environment variables set by the platform
-const envPath = path.join(__dirname, '..', '.env');
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-}
+const QRCodeReader = require("qrcode-reader");
+const Jimp = require("jimp"); // Needed for qrcode-reader image parsing
 
 const app = express();
 
-app.get('/favicon.ico', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'favicon.ico'));
-});
-app.use(express.static('public'));
-app.get('/manifest.json', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
-});
-
-app.get('/logo192.png', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'logo192.png'));
-});
-
-app.get('/logo512.png', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'logo512.png'));
-});
-
-
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the "uploads" directory
+// Serve static files from "public" and "uploads"
+app.use(express.static("public"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Read SSL certificate and key
-const privateKey = fs.readFileSync(path.join(__dirname, "server.key"), "utf8");
-const certificate = fs.readFileSync(path.join(__dirname, "server.crt"), "utf8");
+// Favicon route
+app.get("/favicon.ico", (req, res) => {
+  const faviconPath = path.join(__dirname, "public", "favicon.ico");
+  if (fs.existsSync(faviconPath)) {
+    res.sendFile(faviconPath);
+  } else {
+    res.status(404).end();
+  }
+});
 
-// Create an HTTPS service
-const credentials = { key: privateKey, cert: certificate };
+// Manifest and logos
+app.get("/manifest.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "manifest.json"));
+});
+app.get("/logo192.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "logo192.png"));
+});
+app.get("/logo512.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "logo512.png"));
+});
 
+// Helper function: decode QR code from base64 image
+function readQRCodeFromBase64(base64Image) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const buffer = Buffer.from(base64Image.split(",")[1], "base64");
+      const image = await Jimp.read(buffer);
+      const qr = new QRCodeReader();
+      qr.callback = (err, value) => {
+        if (err) return reject(err);
+        resolve(value ? value.result : null);
+      };
+      qr.decode(image.bitmap);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+// QR processing route
 app.post("/process-qr", async (req, res) => {
   try {
     const { image } = req.body;
-    const buffer = Buffer.from(image.split(",")[1], "base64");
-    const { data } = await read(buffer);
+    if (!image) return res.status(400).json({ error: "No image provided" });
 
-    // Assuming the QR code contains a relative path like "/uploads/logo.jpg"
-    const fullImageUrl = `https://192.168.1.13:8080${data}`; // Use https here
+    const qrData = await readQRCodeFromBase64(image);
 
+    if (!qrData) return res.status(404).json({ error: "QR code not found" });
+
+    // Build public URL from QR data
+    // Replace with your Railway domain
+    const fullImageUrl = `https://${process.env.HOSTNAME || "qrscanner-production-002e.up.railway.app"}${qrData}`;
     res.json({ result: fullImageUrl });
   } catch (error) {
+    console.error("QR Processing Error:", error);
     res.status(500).json({ error: "Failed to read QR code" });
   }
 });
 
-// Start the HTTPS server
-https.createServer(credentials, app).listen(8080, () => {
-  console.log("Backend running on HTTPS port 8080");
+// Start server on Railway port
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
