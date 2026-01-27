@@ -6,6 +6,13 @@ const sharp = require("sharp");
 const { read } = require("qrcode-reader");
 const cors = require("cors");
 
+// Only load .env file if it exists (for local development)
+// In production, use environment variables set by the platform
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
