@@ -13,6 +13,8 @@ if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 }
 
+const app = express();
+
 app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'favicon.ico'));
 });
@@ -29,7 +31,7 @@ app.get('/logo512.png', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'logo512.png'));
 });
 
-const app = express();
+
 app.use(cors());
 app.use(express.json());
 
