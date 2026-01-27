@@ -13,6 +13,22 @@ if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 }
 
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'favicon.ico'));
+});
+app.use(express.static('public'));
+app.get('/manifest.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
+});
+
+app.get('/logo192.png', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'logo192.png'));
+});
+
+app.get('/logo512.png', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'logo512.png'));
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
