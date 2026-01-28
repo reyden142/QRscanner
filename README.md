@@ -1,3 +1,8 @@
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4.19-000000?style=flat&logo=express&logoColor=white)
+![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat&logo=react&logoColor=black)
+![Railway](https://img.shields.io/badge/Railway-Deployed-0B0D0E?style=flat&logo=railway&logoColor=white)
+
 # QRscanner
 
 I created a QR code scanner for the Amazing Race. Each generated QR code provides teams with a hint about the upcoming game, adding an element of fun to the entire Amazing Race.
@@ -44,12 +49,33 @@ After generating the QR code:
 
 ---
 
-### Notes
-Added a "Creating QR Codes" section with:
-1. Steps to add image files to `backend\uploads`
-2. Instructions to use The QR Code Generator website
-3. Screenshot reference showing the interface
-4. Correct format specification with examples
-5. Sample screenshot of a scanned QR code result
+## Deployment Note (Important)
 
-The section is placed right after the introduction so users see it early. The images are referenced using relative paths from the repository root.
+When deploying this project, you **only need to update the backend hostname**.
+
+The backend dynamically builds the public image URL using an environment variable:
+
+```js
+const fullImageUrl = `https://${process.env.HOSTNAME || "qrscanner-production-002e.up.railway.app"}${qrData}`;
+```
+
+### How to configure this
+1. Open your backend `.env` file (or Railway → Variables)
+2. Set your deployed app’s hostname **without `https://`**
+
+```ini
+HOSTNAME=your-app-name.up.railway.app
+```
+
+If `HOSTNAME` is not set, the app will fall back to the default Railway domain.  
+No frontend changes or additional server configuration are required.
+
+---
+
+## Closing Note
+
+This project was built to make interactive games more engaging by combining QR technology with a simple and scalable web setup. Feel free to fork, modify, or adapt this project for your own events, games, or learning purposes.
+
+If you find this useful, a ⭐ on the repository is always appreciated!
+
+---
