@@ -14,25 +14,28 @@ const QRScanner = () => {
   const normalizeQRData = (qrData) => {
     if (!qrData) return qrData;
 
+    // Trim whitespace
+    const trimmed = qrData.trim();
+
     // If it's already a relative path starting with /, return as is
-    if (qrData.startsWith("/")) {
-      return qrData;
+    if (trimmed.startsWith("/")) {
+      return trimmed;
     }
 
     // If it's a full URL, extract the path
     try {
-      const url = new URL(qrData);
+      const url = new URL(trimmed);
       return url.pathname;
     } catch (e) {
       // If it's not a valid URL, check if it looks like a path
-      if (qrData.includes("/uploads/")) {
-        const pathMatch = qrData.match(/\/uploads\/[^/]+\.(jpg|jpeg|png|gif)/i);
+      if (trimmed.includes("/uploads/")) {
+        const pathMatch = trimmed.match(/\/uploads\/[^/]+\.(jpg|jpeg|png|gif)/i);
         if (pathMatch) {
           return pathMatch[0];
         }
       }
-      // Return as is if we can't parse it
-      return qrData;
+      // Return trimmed if we can't parse it
+      return trimmed;
     }
   };
 
@@ -47,6 +50,14 @@ const QRScanner = () => {
 
     // Otherwise, construct URL using current origin
     return `${window.location.origin}${normalizedPath}`;
+  };
+
+  // Check if the QR data represents an image file
+  const isImageFile = (qrData) => {
+    if (!qrData) return false;
+    const normalized = normalizeQRData(qrData);
+    // Check if it ends with image extension OR contains /uploads/ path
+    return /\.(jpg|jpeg|png|gif)$/i.test(normalized) || normalized.includes("/uploads/");
   };
 
   const scanQRCode = useCallback(() => {
@@ -79,7 +90,9 @@ const QRScanner = () => {
         );
 
         if (qrCodeData) {
-          setScanResult(qrCodeData.data);
+          // Trim the QR data to remove any whitespace
+          const trimmedData = qrCodeData.data.trim();
+          setScanResult(trimmedData);
           setIsScanning(false);
           setShowModal(true);
         }
@@ -102,8 +115,6 @@ const QRScanner = () => {
     setScanResult("");
     setIsScanning(true);
   };
-
-  const isImageFile = (url) => /\.(jpg|jpeg|png|gif)$/i.test(url);
 
   const imageUrl = scanResult ? getImageUrl(scanResult) : "";
 
@@ -136,7 +147,12 @@ const QRScanner = () => {
                   }}
                 />
               ) : (
-                <p>Unsupported or invalid QR Code data</p>
+                <div>
+                  <p>Unsupported or invalid QR Code data</p>
+                  <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+                    Scanned: {scanResult}
+                  </p>
+                </div>
               )}
             </div>
           </div>
