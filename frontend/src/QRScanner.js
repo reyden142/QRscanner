@@ -10,6 +10,45 @@ const QRScanner = () => {
   const [imageLoading, setImageLoading] = useState(true);
   const webcamRef = useRef(null);
 
+  // Normalize QR code data: extract path from URL if needed
+  const normalizeQRData = (qrData) => {
+    if (!qrData) return qrData;
+
+    // If it's already a relative path starting with /, return as is
+    if (qrData.startsWith("/")) {
+      return qrData;
+    }
+
+    // If it's a full URL, extract the path
+    try {
+      const url = new URL(qrData);
+      return url.pathname;
+    } catch (e) {
+      // If it's not a valid URL, check if it looks like a path
+      if (qrData.includes("/uploads/")) {
+        const pathMatch = qrData.match(/\/uploads\/[^/]+\.(jpg|jpeg|png|gif)/i);
+        if (pathMatch) {
+          return pathMatch[0];
+        }
+      }
+      // Return as is if we can't parse it
+      return qrData;
+    }
+  };
+
+  // Get the full image URL from QR data
+  const getImageUrl = (qrData) => {
+    const normalizedPath = normalizeQRData(qrData);
+
+    // If it's already a full URL (starts with http/https), return as is
+    if (normalizedPath.startsWith("http://") || normalizedPath.startsWith("https://")) {
+      return normalizedPath;
+    }
+
+    // Otherwise, construct URL using current origin
+    return `${window.location.origin}${normalizedPath}`;
+  };
+
   const scanQRCode = useCallback(() => {
     if (!webcamRef.current) return;
     const imageSrc = webcamRef.current.getScreenshot();
@@ -66,6 +105,8 @@ const QRScanner = () => {
 
   const isImageFile = (url) => /\.(jpg|jpeg|png|gif)$/i.test(url);
 
+  const imageUrl = scanResult ? getImageUrl(scanResult) : "";
+
   return (
     <div>
       <Webcam
@@ -85,11 +126,14 @@ const QRScanner = () => {
             <div className="image-container">
               {isImageFile(scanResult) ? (
                 <img
-                  src={scanResult}
+                  src={imageUrl}
                   alt="Scanned File"
                   className={`image-preview ${imageLoading ? "loading" : ""}`}
                   onLoad={() => setImageLoading(false)}
-                  onError={() => setImageLoading(false)}
+                  onError={(e) => {
+                    console.error("Failed to load image:", imageUrl);
+                    setImageLoading(false);
+                  }}
                 />
               ) : (
                 <p>Unsupported or invalid QR Code data</p>
