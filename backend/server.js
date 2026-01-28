@@ -15,25 +15,61 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Favicon route
+// Serve React frontend static files (this should serve manifest.json, favicon, etc.)
+app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+// Favicon route - check frontend build first, then backend public
 app.get("/favicon.ico", (req, res) => {
-  const faviconPath = path.join(__dirname, "public", "favicon.ico");
-  if (fs.existsSync(faviconPath)) {
-    res.sendFile(faviconPath);
+  const frontendFavicon = path.join(__dirname, "../frontend/build", "favicon.ico");
+  const backendFavicon = path.join(__dirname, "public", "favicon.ico");
+
+  if (fs.existsSync(frontendFavicon)) {
+    res.sendFile(frontendFavicon);
+  } else if (fs.existsSync(backendFavicon)) {
+    res.sendFile(backendFavicon);
   } else {
     res.status(404).end();
   }
 });
 
-// Manifest and logos
+// Manifest and logos - check frontend build first
 app.get("/manifest.json", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "manifest.json"));
+  const frontendManifest = path.join(__dirname, "../frontend/build", "manifest.json");
+  const backendManifest = path.join(__dirname, "public", "manifest.json");
+
+  if (fs.existsSync(frontendManifest)) {
+    res.sendFile(frontendManifest);
+  } else if (fs.existsSync(backendManifest)) {
+    res.sendFile(backendManifest);
+  } else {
+    res.status(404).end();
+  }
 });
+
 app.get("/logo192.png", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "logo192.png"));
+  const frontendLogo = path.join(__dirname, "../frontend/build", "logo192.png");
+  const backendLogo = path.join(__dirname, "public", "logo192.png");
+
+  if (fs.existsSync(frontendLogo)) {
+    res.sendFile(frontendLogo);
+  } else if (fs.existsSync(backendLogo)) {
+    res.sendFile(backendLogo);
+  } else {
+    res.status(404).end();
+  }
 });
+
 app.get("/logo512.png", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "logo512.png"));
+  const frontendLogo = path.join(__dirname, "../frontend/build", "logo512.png");
+  const backendLogo = path.join(__dirname, "public", "logo512.png");
+
+  if (fs.existsSync(frontendLogo)) {
+    res.sendFile(frontendLogo);
+  } else if (fs.existsSync(backendLogo)) {
+    res.sendFile(backendLogo);
+  } else {
+    res.status(404).end();
+  }
 });
 
 // Helper function: decode QR code from base64 image
@@ -73,9 +109,6 @@ app.post("/process-qr", async (req, res) => {
     res.status(500).json({ error: "Failed to read QR code" });
   }
 });
-
-// Serve React frontend static files
-app.use(express.static(path.join(__dirname, "../frontend/build")));
 
 // Catch-all handler: send back React's index.html file for all non-API routes
 app.get("*", (req, res) => {
