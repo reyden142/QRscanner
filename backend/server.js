@@ -74,6 +74,14 @@ app.post("/process-qr", async (req, res) => {
   }
 });
 
+// Serve React frontend static files
+app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+// Catch-all handler: send back React's index.html file for all non-API routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
+});
+
 // Start server on Railway port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
